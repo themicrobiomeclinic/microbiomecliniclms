@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 import type { Quiz, QuizQuestion, QuizOption } from '@/lib/types'
 import { 
-  ArrowLeft, ArrowRight, CheckCircle2, Circle, XCircle,, 
+  ArrowLeft, ArrowRight, CheckCircle2, Circle, XCircle, 
   RotateCcw, Trophy, FileQuestion
 } from 'lucide-react'
 import clsx from 'clsx'
