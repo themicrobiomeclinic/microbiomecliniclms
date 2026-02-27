@@ -20,7 +20,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    const { error } = await signIn(email, password)
+  const { error } = await signIn(email, password)
     
     if (error) {
       setError(error.message === 'Invalid login credentials' 
@@ -29,9 +29,8 @@ export default function LoginPage() {
       )
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     }
-  }
 
   return (
     <div className="min-h-screen flex">
