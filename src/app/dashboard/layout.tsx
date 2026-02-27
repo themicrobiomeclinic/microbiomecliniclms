@@ -21,12 +21,6 @@ export default function DashboardLayout({
     }
   }, [user, loading, router])
 
-  useEffect(() => {
-    if (!loading && profile && !profile.has_course_access) {
-      router.push('/no-access')
-    }
-  }, [profile, loading, router])
-
   if (loading) {
     return (
       <div className="min-h-screen bg-sage-50 flex items-center justify-center">
@@ -38,8 +32,24 @@ export default function DashboardLayout({
     )
   }
 
-  if (!user || !profile?.has_course_access) {
+  if (!user) {
     return null
+  }
+
+  if (profile && !profile.has_course_access) {
+    router.push('/no-access')
+    return null
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-sage-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin text-tmc-500 mx-auto mb-4" />
+          <p className="text-sage-600">Loading your profile...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
