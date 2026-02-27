@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import Link from 'next/link'
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
@@ -13,14 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-  const { error } = await signIn(email, password)
+    const { error } = await signIn(email, password)
     
     if (error) {
       setError(error.message === 'Invalid login credentials' 
@@ -31,6 +29,7 @@ export default function LoginPage() {
     } else {
       window.location.href = '/dashboard'
     }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -170,14 +169,7 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <p className="text-center text-sm text-sage-500 mt-6">
-            Don't have an account?{' '}
-            <Link href="/auth/signup" className="text-tmc-600 hover:text-tmc-700 font-medium">
-              Purchase the course
-            </Link>
-          </p>
-
-          <p className="text-center text-xs text-sage-400 mt-4">
+          <p className="text-center text-xs text-sage-400 mt-6">
             <Link href="https://themicrobiomeclinic.com.au" className="hover:text-sage-600">
               ← Back to The Microbiome Clinic
             </Link>
