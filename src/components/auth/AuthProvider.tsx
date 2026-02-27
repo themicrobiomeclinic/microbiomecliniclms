@@ -47,10 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setUser(session.user)
-          await fetchProfile(session.user.id)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          setUser(user)
+          await fetchProfile(user.id)
         }
       } catch (e) {
         console.error('Auth init error:', e)
@@ -63,9 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          setUser(session.user)
-          await fetchProfile(session.user.id)
+        if (user) {
+          setUser(user)
+          await fetchProfile(user.id)
         } else {
           setUser(null)
           setProfile(null)
