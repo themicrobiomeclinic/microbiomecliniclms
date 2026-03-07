@@ -33,7 +33,7 @@ export default function ChapterPage() {
 
       const { data: moduleData } = await supabase
         .from('modules')
-        .select('id, module_id, slug, title, subtitle, chapter_number, content_html, key_takeaways, clinical_application, references, downloadable_resources, estimated_reading_minutes, has_inline_quiz, quiz_data, is_published')
+        .select('*')
         .eq('slug', moduleSlug)
         .single()
 
@@ -42,7 +42,7 @@ export default function ChapterPage() {
 
       const { data: chaptersData } = await supabase
         .from('chapters')
-        .select('id, module_id, slug, title, subtitle, chapter_number, content_html, key_takeaways, clinical_application, references, downloadable_resources, estimated_reading_minutes, has_inline_quiz, quiz_data, is_published')
+        .select('*')
         .eq('module_id', moduleData.id)
         .eq('is_published', true)
         .order('chapter_number')
