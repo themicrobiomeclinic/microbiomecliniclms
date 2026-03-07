@@ -11,6 +11,7 @@ import {
   BookOpen, Download, Lightbulb, Stethoscope, BookMarked
 } from 'lucide-react'
 import clsx from 'clsx'
+import QuizComponent from '@/components/quiz/QuizComponent'
 
 export default function ChapterPage() {
   const params = useParams()
@@ -32,7 +33,7 @@ export default function ChapterPage() {
 
       const { data: moduleData } = await supabase
         .from('modules')
-        .select('*')
+        .select('id, module_id, slug, title, subtitle, chapter_number, content_html, key_takeaways, clinical_application, references, downloadable_resources, estimated_reading_minutes, has_inline_quiz, quiz_data, is_published')
         .eq('slug', moduleSlug)
         .single()
 
@@ -41,7 +42,7 @@ export default function ChapterPage() {
 
       const { data: chaptersData } = await supabase
         .from('chapters')
-        .select('*')
+        .select('id, module_id, slug, title, subtitle, chapter_number, content_html, key_takeaways, clinical_application, references, downloadable_resources, estimated_reading_minutes, has_inline_quiz, quiz_data, is_published')
         .eq('module_id', moduleData.id)
         .eq('is_published', true)
         .order('chapter_number')
@@ -216,6 +217,8 @@ export default function ChapterPage() {
             </div>
           </div>
         )}
+
+        {chapter.quiz_data && <QuizComponent quizData={chapter.quiz_data} />}
 
         {/* Downloadable Resources */}
         {chapter.downloadable_resources && chapter.downloadable_resources.length > 0 && (
