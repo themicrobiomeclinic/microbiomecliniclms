@@ -48,6 +48,7 @@ export interface Chapter {
   downloadable_resources: Resource[] | null
   estimated_reading_minutes: number
   has_inline_quiz: boolean
+  quiz_data: any | null
   is_published: boolean
   created_at: string
   updated_at: string
