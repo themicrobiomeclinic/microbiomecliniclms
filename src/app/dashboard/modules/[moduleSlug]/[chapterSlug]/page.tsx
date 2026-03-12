@@ -81,6 +81,7 @@ export default function ChapterPage() {
 
   // FIX: upsert now includes started_at so the conflict resolution works correctly
   const markComplete = useCallback(async () => {
+    console.log("fired", chapter?.id, user?.id)
     if (!chapter || !user) return
     
     const now = new Date().toISOString()
