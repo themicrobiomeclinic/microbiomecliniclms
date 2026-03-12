@@ -289,10 +289,11 @@ const markComplete = useCallback(async () => {
             <span className="font-medium">Chapter completed</span>
           </div>
         ) : (
-          <button
-            onClick={markComplete}
-            className="flex items-center gap-2 bg-tmc-600 hover:bg-tmc-700 text-white font-medium rounded-xl px-6 py-3 transition-all shadow-sm hover:shadow-md"
-          >
+        <button
+  onClick={markComplete}
+  disabled={!user}
+  className="flex items-center gap-2 bg-tmc-600 hover:bg-tmc-700 disabled:bg-sage-300 disabled:cursor-not-allowed text-white font-medium rounded-xl px-6 py-3 transition-all shadow-sm hover:shadow-md"
+>
             <CheckCircle2 size={20} />
             Mark as complete
           </button>
