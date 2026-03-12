@@ -1,4 +1,3 @@
-'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -62,17 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (user) {
-          setUser(user)
-          await fetchProfile(user.id)
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
-        setLoading(false)
-      }
-    )
+  async (event, session) => {
+    if (session?.user) {
+      setUser(session.user)
+      await fetchProfile(session.user.id)
+    } else {
+      setUser(null)
+      setProfile(null)
+    }
+    setLoading(false)
+  }
+)
 
     return () => subscription.unsubscribe()
   }, [])
