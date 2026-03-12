@@ -42,10 +42,13 @@ export default function DashboardPage() {
       if (modulesData) setModules(modulesData)
 
       // Fetch user progress
-      const { data: progressData } = await supabase
-        .from('user_progress')
-        .select('chapter_id, completed_at, chapters(module_id)')
-        .not('completed_at', 'is', null)
+      const { data: { user } } = await supabase.auth.getUser()
+
+const { data: progressData } = await supabase
+  .from('user_progress')
+  .select('chapter_id, completed_at, chapters(module_id)')
+  .eq('user_id', user?.id)
+  .not('completed_at', 'is', null)
 
       if (progressData) {
         const progressMap: Record<number, { completed: number; total: number }> = {}
