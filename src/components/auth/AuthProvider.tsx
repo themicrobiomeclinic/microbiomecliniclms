@@ -50,9 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          setUser(user)
-          await fetchProfile(user.id)
-        }
+  setUser(user)
+  fetchProfile(user.id) // don't await — let loading clear independently
+}
       } catch (e) {
         console.error('Auth init error:', e)
       } finally {
