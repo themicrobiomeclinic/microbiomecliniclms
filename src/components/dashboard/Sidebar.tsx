@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Module } from '@/lib/types'
 import { 
-  BookOpen, ChevronDown, ChevronRight, Menu, X,
+  ChevronDown, ChevronRight, Menu, X,
   GraduationCap, LayoutDashboard
 } from 'lucide-react'
 import clsx from 'clsx'
@@ -31,23 +31,47 @@ export function Sidebar() {
     fetchModules()
   }, [supabase])
 
+  // Auto-expand the module that contains the current chapter
+  useEffect(() => {
+    if (!pathname) return
+    const match = pathname.match(/\/dashboard\/modules\/([^/]+)/)
+    if (match) {
+      const slug = match[1]
+      const mod = modules.find(m => m.slug === slug)
+      if (mod && expandedModule !== mod.id) {
+        loadChapters(mod.id)
+      }
+    }
+  }, [pathname, modules])
+
   const loadChapters = async (moduleId: number) => {
-    if (chapters[moduleId]) {
-      setExpandedModule(expandedModule === moduleId ? null : moduleId)
+    // Toggle collapse if already loaded and expanded
+    if (chapters[moduleId] && expandedModule === moduleId) {
+      setExpandedModule(null)
       return
     }
 
-    const { data } = await supabase
-      .from('chapters')
-      .select('id, slug, title, chapter_number')
-      .eq('module_id', moduleId)
-      .eq('is_published', true)
-      .order('chapter_number')
-    
-    if (data) {
-      setChapters(prev => ({ ...prev, [moduleId]: data }))
+    // Fetch if not yet loaded
+    if (!chapters[moduleId]) {
+      const { data } = await supabase
+        .from('chapters')
+        .select('id, slug, title, chapter_number')
+        .eq('module_id', moduleId)
+        .eq('is_published', true)
+        .order('chapter_number')
+      
+      if (data) {
+        setChapters(prev => ({ ...prev, [moduleId]: data }))
+      }
     }
-    setExpandedModule(expandedModule === moduleId ? null : moduleId)
+
+    setExpandedModule(moduleId)
+  }
+
+  // FIX: exact slug match — prevents substrings lighting up multiple chapters
+  const isActiveChapter = (chSlug: string) => {
+    return pathname === `/dashboard/modules/${chSlug}` || 
+           pathname?.endsWith(`/${chSlug}`)
   }
 
   const sidebarContent = (
@@ -95,26 +119,49 @@ export function Sidebar() {
         {/* Module list */}
         {modules.map((mod) => (
           <div key={mod.id}>
-            <button
-              onClick={() => loadChapters(mod.id)}
-              className={clsx(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left',
-                expandedModule === mod.id
-                  ? 'bg-sage-100 text-slate-800'
-                  : 'text-sage-700 hover:bg-sage-100/60 hover:text-slate-800'
-              )}
-            >
-              <span className="text-base flex-shrink-0 w-6 text-center">{mod.icon}</span>
-              <span className="flex-1 font-medium leading-snug truncate">
-                <span className="text-sage-400 text-xs mr-1">{mod.module_number}.</span>
-                {mod.title?.split('—')[0]?.trim()}
-              </span>
-              {expandedModule === mod.id ? (
-                <ChevronDown size={14} className="text-sage-400 flex-shrink-0" />
-              ) : (
-                <ChevronRight size={14} className="text-sage-400 flex-shrink-0" />
-              )}
-            </button>
+            {/* 
+              FIX: Split into two interaction zones:
+              - Text/icon area → navigates to module overview page
+              - Chevron button → toggles chapter dropdown only
+            */}
+            <div className={clsx(
+              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left',
+              expandedModule === mod.id
+                ? 'bg-sage-100 text-slate-800'
+                : 'text-sage-700 hover:bg-sage-100/60 hover:text-slate-800'
+            )}>
+              {/* Clickable text area → module overview */}
+              <Link
+                href={`/dashboard/modules/${mod.slug}`}
+                className="flex items-center gap-3 flex-1 min-w-0"
+                onClick={() => {
+                  // Also expand chapters when navigating to module
+                  if (expandedModule !== mod.id) loadChapters(mod.id)
+                }}
+              >
+                <span className="text-base flex-shrink-0 w-6 text-center">{mod.icon}</span>
+                <span className="flex-1 font-medium leading-snug truncate">
+                  <span className="text-sage-400 text-xs mr-1">{mod.module_number}.</span>
+                  {mod.title?.split('—')[0]?.trim()}
+                </span>
+              </Link>
+
+              {/* Chevron button → toggle dropdown only, no navigation */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  loadChapters(mod.id)
+                }}
+                className="flex-shrink-0 p-1 rounded hover:bg-sage-200 transition-colors"
+                aria-label="Toggle chapters"
+              >
+                {expandedModule === mod.id ? (
+                  <ChevronDown size={14} className="text-sage-400" />
+                ) : (
+                  <ChevronRight size={14} className="text-sage-400" />
+                )}
+              </button>
+            </div>
 
             {/* Chapter list */}
             {expandedModule === mod.id && chapters[mod.id] && (
@@ -125,7 +172,8 @@ export function Sidebar() {
                     href={`/dashboard/modules/${mod.slug}/${ch.slug}`}
                     className={clsx(
                       'block px-3 py-1.5 rounded-md text-xs transition-all leading-snug',
-                      pathname?.includes(ch.slug)
+                      // FIX: exact match on full path segment, not substring
+                      pathname === `/dashboard/modules/${mod.slug}/${ch.slug}`
                         ? 'bg-tmc-50 text-tmc-700 font-medium'
                         : 'text-sage-600 hover:bg-sage-50 hover:text-slate-700'
                     )}
