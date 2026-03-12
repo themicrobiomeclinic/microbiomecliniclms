@@ -62,15 +62,16 @@ export default function ChapterPage() {
 
         setIsCompleted(!!progressData?.completed_at)
 
-        await supabase
-          .from('user_progress')
-          .upsert({
-            user_id: user.id,
-            chapter_id: current.id,
-            started_at: new Date().toISOString(),
-          }, {
-            onConflict: 'user_id,chapter_id',
-          })
+        // FIX: Only set started_at if no existing record — avoids overwriting completed_at
+        if (!progressData) {
+          await supabase
+            .from('user_progress')
+            .insert({
+              user_id: user.id,
+              chapter_id: current.id,
+              started_at: new Date().toISOString(),
+            })
+        }
       }
 
       setLoading(false)
@@ -78,15 +79,19 @@ export default function ChapterPage() {
     fetchChapter()
   }, [moduleSlug, chapterSlug, user, supabase])
 
+  // FIX: upsert now includes started_at so the conflict resolution works correctly
   const markComplete = useCallback(async () => {
     if (!chapter || !user) return
     
+    const now = new Date().toISOString()
+
     await supabase
       .from('user_progress')
       .upsert({
         user_id: user.id,
         chapter_id: chapter.id,
-        completed_at: new Date().toISOString(),
+        started_at: now,
+        completed_at: now,
       }, {
         onConflict: 'user_id,chapter_id',
       })
