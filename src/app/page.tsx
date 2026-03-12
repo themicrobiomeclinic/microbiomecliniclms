@@ -80,13 +80,13 @@ export default function ChapterPage() {
   }, [moduleSlug, chapterSlug, user, supabase])
 
   // FIX: upsert now includes started_at so the conflict resolution works correctly
-  const markComplete = useCallback(async () => {
-    console.log('markComplete fired', { chapter: chapter?.id, user: user?.id })
+const markComplete = useCallback(async () => {
+    console.log('fired', chapter?.id, user?.id)
     if (!chapter || !user) return
-    
-    const now = new Date().toISOString()
 
-    const { error } = await supabase
+    const now = new Date().toISOString()
+    
+    await supabase
       .from('user_progress')
       .upsert({
         user_id: user.id,
@@ -95,14 +95,8 @@ export default function ChapterPage() {
         completed_at: now,
       }, {
         onConflict: 'user_id,chapter_id',
-        ignoreDuplicates: false,
       })
-
-    if (error) {
-      console.error('markComplete error:', error)
-      return
-    }
-
+    
     setIsCompleted(true)
   }, [chapter, user, supabase])
 
