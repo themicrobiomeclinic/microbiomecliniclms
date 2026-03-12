@@ -8,7 +8,6 @@ import type { Module } from '@/lib/types'
 import { BookOpen, Clock, CheckCircle2, ArrowRight } from 'lucide-react'
 import clsx from 'clsx'
 
-// Narrative arc stages
 const stages = [
   { label: 'The Problem', modules: [1], color: 'text-red-600', bg: 'bg-red-50' },
   { label: 'The Science', modules: [2], color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -31,24 +30,22 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    if (!user) return
+
     async function fetchData() {
-      // Fetch modules
       const { data: modulesData } = await supabase
         .from('modules')
         .select('*')
         .eq('is_published', true)
         .order('module_number')
-      
+
       if (modulesData) setModules(modulesData)
 
-      // Fetch user progress
-      const { data: { user } } = await supabase.auth.getUser()
-
-
-  .from('user_progress')
-  .select('chapter_id, completed_at, chapters(module_id)')
-  .eq('user_id', user?.id)
-  .not('completed_at', 'is', null)
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('chapter_id, completed_at, chapters(module_id)')
+        .eq('user_id', user!.id)
+        .not('completed_at', 'is', null)
 
       if (progressData) {
         const progressMap: Record<number, { completed: number; total: number }> = {}
@@ -65,7 +62,7 @@ export default function DashboardPage() {
       }
     }
     fetchData()
-  }, [supabase])
+  }, [supabase, user])
 
   const totalChapters = modules.reduce((sum, m) => sum + m.chapter_count, 0)
   const completedChapters = Object.values(progress).reduce((sum, p) => sum + p.completed, 0)
@@ -73,7 +70,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      {/* Welcome header */}
       <div className="mb-8">
         <h1 className="font-display text-3xl font-semibold text-slate-900 mb-2">
           {profile?.full_name ? `Welcome back, Dr ${profile.full_name.split(' ').pop()}` : 'Course Dashboard'}
@@ -83,7 +79,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Overall progress */}
       <div className="bg-white rounded-2xl border border-sage-200 p-6 mb-8 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -106,13 +101,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Module grid */}
       <div className="space-y-4">
         {modules.map((mod, index) => {
           const stage = getStage(mod.module_number)
           const modProgress = progress[mod.id]
-          const percentage = modProgress 
-            ? Math.round((modProgress.completed / modProgress.total) * 100) 
+          const percentage = modProgress
+            ? Math.round((modProgress.completed / modProgress.total) * 100)
             : 0
           const isComplete = percentage === 100
 
@@ -127,7 +121,6 @@ export default function DashboardPage() {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-start gap-4">
-                {/* Module icon */}
                 <div className={clsx(
                   'w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0',
                   isComplete ? 'bg-tmc-100' : 'bg-sage-100'
@@ -139,7 +132,6 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* Module info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {stage && (
@@ -148,17 +140,16 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  
+
                   <h3 className="font-display text-lg font-semibold text-slate-900 mb-1 group-hover:text-tmc-700 transition-colors">
                     <span className="text-sage-400 mr-1">Module {mod.module_number}:</span>
                     {mod.title?.split('—').pop()?.trim() || mod.title}
                   </h3>
-                  
+
                   <p className="text-sm text-sage-600 mb-3">
                     {mod.subtitle}
                   </p>
 
-                  {/* Meta row */}
                   <div className="flex items-center gap-4 text-xs text-sage-500">
                     <span className="flex items-center gap-1">
                       <BookOpen size={12} />
@@ -176,13 +167,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Progress / Arrow */}
                 <div className="flex-shrink-0 flex flex-col items-end gap-2">
                   {modProgress && modProgress.completed > 0 ? (
                     <div className="text-right">
                       <div className="text-sm font-semibold text-tmc-600">{percentage}%</div>
                       <div className="w-20 h-1.5 bg-sage-200 rounded-full overflow-hidden mt-1">
-                        <div 
+                        <div
                           className="h-full bg-tmc-500 rounded-full transition-all duration-500"
                           style={{ width: `${percentage}%` }}
                         />
@@ -198,7 +188,6 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Practitioner mindset footer */}
       <div className="mt-10 text-center text-sm text-sage-400 italic font-display">
         "From understanding the problem to becoming part of the solution"
       </div>
