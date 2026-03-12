@@ -25,7 +25,7 @@ function getStage(moduleNumber: number) {
 }
 
 export default function DashboardPage() {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const [modules, setModules] = useState<Module[]>([])
   const [progress, setProgress] = useState<Record<number, { completed: number; total: number }>>({})
   const supabase = createClient()
@@ -44,7 +44,7 @@ export default function DashboardPage() {
       // Fetch user progress
       const { data: { user } } = await supabase.auth.getUser()
 
-const { data: progressData } = await supabase
+
   .from('user_progress')
   .select('chapter_id, completed_at, chapters(module_id)')
   .eq('user_id', user?.id)
