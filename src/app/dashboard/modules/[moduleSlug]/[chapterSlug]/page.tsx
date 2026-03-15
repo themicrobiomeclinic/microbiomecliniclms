@@ -11,7 +11,6 @@ import {
   BookOpen, Download, Lightbulb, Stethoscope, BookMarked
 } from 'lucide-react'
 import clsx from 'clsx'
-import QuizComponent from '@/components/quiz/QuizComponent'
 
 export default function ChapterPage() {
   const params = useParams()
@@ -224,7 +223,6 @@ export default function ChapterPage() {
           </div>
         )}
 
-        {chapter.quiz_data && <QuizComponent quizData={chapter.quiz_data} />}
 
         {/* Downloadable Resources */}
         {chapter.downloadable_resources && chapter.downloadable_resources.length > 0 && (

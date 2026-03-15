@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
-import type { Module, Chapter } from '@/lib/types'
+import type { Module, Chapter, ChapterSummary } from '@/lib/types'
 import { 
   Clock, CheckCircle2, Circle, BookOpen, ArrowRight,
   MessageSquare, FileQuestion, ArrowLeft
@@ -19,7 +19,7 @@ export default function ModulePage() {
   const moduleSlug = params?.moduleSlug as string
 
   const [module, setModule] = useState<Module | null>(null)
-  const [chapters, setChapters] = useState<Chapter[]>([])
+  const [chapters, setChapters] = useState<ChapterSummary[]>([])
   const [completedChapterIds, setCompletedChapterIds] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +38,7 @@ export default function ModulePage() {
 
       const { data: chaptersData } = await supabase
         .from('chapters')
-        .select('*')
+        .select('id, module_id, chapter_number, title, slug, estimated_minutes, summary')
         .eq('module_id', moduleData.id)
         .eq('is_published', true)
         .order('chapter_number')

@@ -143,3 +143,16 @@ export interface ChapterWithNav extends Chapter {
   next_chapter: { slug: string; title: string; module_slug: string } | null
   is_completed: boolean
 }
+
+export interface ChapterSummary {
+  id: number
+  module_id: number
+  slug: string
+  title: string
+  subtitle?: string | null
+  chapter_number: number
+  estimated_minutes?: number
+  estimated_reading_minutes?: number
+  summary?: string | null
+  has_inline_quiz?: boolean
+}
