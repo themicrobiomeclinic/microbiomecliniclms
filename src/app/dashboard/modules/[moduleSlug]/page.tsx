@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
-import type { Module, Chapter, ChapterSummary } from '@/lib/types'
+import type { Module, Chapter, ChapterSummary, QuizAttempt } from '@/lib/types'
 import { 
   Clock, CheckCircle2, Circle, BookOpen, ArrowRight,
   MessageSquare, FileQuestion, ArrowLeft
@@ -21,6 +21,7 @@ export default function ModulePage() {
   const [module, setModule] = useState<Module | null>(null)
   const [chapters, setChapters] = useState<ChapterSummary[]>([])
   const [completedChapterIds, setCompletedChapterIds] = useState<Set<number>>(new Set())
+  const [attempts, setAttempts] = useState<QuizAttempt[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -57,6 +58,27 @@ export default function ModulePage() {
 
         if (progressData) {
           setCompletedChapterIds(new Set(progressData.map(p => p.chapter_id)))
+        }
+      }
+
+      // Fetch quiz attempts for this module
+      if (user && moduleData.has_quiz) {
+        const { data: quizData } = await supabase
+          .from('quizzes')
+          .select('id')
+          .eq('module_id', moduleData.id)
+          .single()
+
+        if (quizData) {
+          const { data: attemptsData } = await supabase
+            .from('quiz_attempts')
+            .select('id, score, correct_answers, total_questions, completed_at')
+            .eq('quiz_id', quizData.id)
+            .eq('user_id', user.id)
+            .order('completed_at', { ascending: false })
+            .limit(3)
+
+          if (attemptsData) setAttempts(attemptsData as QuizAttempt[])
         }
       }
 
@@ -221,6 +243,39 @@ export default function ModulePage() {
             </div>
             <ArrowRight size={18} className="text-tmc-400 group-hover:translate-x-0.5 transition-transform" />
           </Link>
+        </div>
+      )}
+
+
+      {/* Quiz attempt history */}
+      {attempts.length > 0 && (
+        <div className="mt-4 bg-white rounded-2xl border border-sage-200 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Your Previous Attempts</h3>
+          <div className="space-y-2">
+            {attempts.map((attempt) => {
+              const pct = Math.round((attempt.correct_answers / attempt.total_questions) * 100)
+              const passed = pct >= 70
+              const date = new Date(attempt.completed_at).toLocaleDateString('en-AU', {
+                day: 'numeric', month: 'short', year: 'numeric'
+              })
+              return (
+                <div key={attempt.id} className="flex items-center justify-between py-2 border-b border-sage-100 last:border-0">
+                  <span className="text-sm text-sage-500">{date}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-slate-700">{pct}%</span>
+                    <span className={clsx(
+                      'text-xs font-medium px-2 py-0.5 rounded-full',
+                      passed
+                        ? 'bg-tmc-50 text-tmc-700 border border-tmc-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                    )}>
+                      {passed ? 'Pass' : 'Fail'}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
