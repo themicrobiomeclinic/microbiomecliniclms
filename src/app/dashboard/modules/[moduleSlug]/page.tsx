@@ -39,7 +39,7 @@ export default function ModulePage() {
 
       const { data: chaptersData } = await supabase
         .from('chapters')
-        .select('id, module_id, chapter_number, title, slug, estimated_reading_minutes, summary')
+        .select('id, module_id, chapter_number, title, slug, estimated_reading_minutes')
         .eq('module_id', moduleData.id)
         .eq('is_published', true)
         .order('chapter_number')
